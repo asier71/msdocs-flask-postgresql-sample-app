@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Imágenes procesadas{% endblock %}
+
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
@@ -14,13 +15,16 @@
       padding: 15px;
       box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
+    .btn-image {
+      margin-right: 5px;
+    }
   </style>
 {% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="scala-brand"><i class="fas fa-table me-2"></i>Imágenes procesadas</h1>
-      <span class="badge bg-secondary" id="total-registros">Cargando...</span>
+    <h1 class="scala-brand"><i class="fas fa-table me-2"></i>Imágenes procesadas</h1>
+    <span class="badge bg-secondary" id="total-registros">Cargando...</span>
   </div>
 
   <div id="contenido-tabla" class="table-responsive"></div>
@@ -53,6 +57,7 @@
                 <th>Verde</th>
                 <th>Azul</th>
                 <th>Fecha</th>
+                <th>Imágenes</th>
               </tr>
             </thead>
             <tbody>
@@ -64,6 +69,11 @@
                   <td>${r.verde}</td>
                   <td>${r.azul}</td>
                   <td>${new Date(r.fechaHora).toLocaleString()}</td>
+                  <td>
+                    <a href="/imagenes/${r.id}/original.bmp" target="_blank" class="btn btn-outline-primary btn-sm btn-image">Original</a>
+                    <a href="/imagenes/${r.id}/byn.bmp" target="_blank" class="btn btn-outline-dark btn-sm btn-image">B/N</a>
+                    <a href="/imagenes/${r.id}/pixelada.bmp" target="_blank" class="btn btn-outline-secondary btn-sm btn-image">Pixelada</a>
+                  </td>
                 </tr>
               `).join('')}
             </tbody>

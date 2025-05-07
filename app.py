@@ -5,7 +5,6 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 
-# === CONFIGURACIÓN DE FLASK ===
 app = Flask(__name__, static_folder='static')
 csrf = CSRFProtect(app)
 
@@ -17,17 +16,16 @@ else:
     print("Loading config.production.")
     app.config.from_object('azureproject.production')
 
-# Configuración de la base de datos
 app.config.update(
     SQLALCHEMY_DATABASE_URI=app.config.get('DATABASE_URI'),
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
 )
 
-# Inicializar base de datos y migraciones
+# === Inicialización base de datos ===
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# === MODELO DE DATOS ===
+# === MODELO ===
 class ImagenProcesada(db.Model):
     __tablename__ = 'imagen_procesada'
     id = db.Column(db.Integer, primary_key=True)
@@ -38,17 +36,12 @@ class ImagenProcesada(db.Model):
     azul = db.Column(db.Integer)
     fecha_hora = db.Column(db.DateTime)
 
-    def __str__(self):
-        return f"{self.usuario} - {self.nombre_archivo} ({self.fecha_hora})"
-
 # === RUTAS ===
 
-# Página principal
-@app.route('/', methods=['GET'])
+@app.route('/')
 def index():
     return render_template('index.html')
 
-# Ruta para recibir datos desde la app Scala
 @app.route('/registro', methods=['POST'])
 @csrf.exempt
 def registro():
@@ -71,28 +64,68 @@ def registro():
     except Exception as e:
         return jsonify({'error': f'Error procesando datos: {str(e)}'}), 500
 
-# Ruta para obtener datos y mostrarlos en la tabla HTML
+@app.route('/subir_con_imagen', methods=['POST'])
+@csrf.exempt
+def subir_con_imagen():
+    try:
+        usuario = request.form.get('usuario')
+        nombre_archivo = request.form.get('nombreArchivo')
+        rojo = int(request.form.get('rojo'))
+        verde = int(request.form.get('verde'))
+        azul = int(request.form.get('azul'))
+        fecha_hora = datetime.fromisoformat(request.form.get('fechaHora'))
+
+        imagen = ImagenProcesada(
+            usuario=usuario,
+            nombre_archivo=nombre_archivo,
+            rojo=rojo,
+            verde=verde,
+            azul=azul,
+            fecha_hora=fecha_hora
+        )
+        db.session.add(imagen)
+        db.session.commit()
+
+        upload_dir = os.path.join(app.static_folder, 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+
+        for key in ['original', 'byn', 'pixelada']:
+            if key in request.files:
+                f = request.files[key]
+                save_path = os.path.join(upload_dir, f"{imagen.id}_{key}.bmp")
+                f.save(save_path)
+
+        return jsonify({'mensaje': 'Datos e imágenes subidos correctamente'}), 201
+    except Exception as e:
+        return jsonify({'error': f'Error: {str(e)}'}), 500
+
 @app.route('/datos', methods=['GET'])
 def datos():
     registros = ImagenProcesada.query.order_by(ImagenProcesada.fecha_hora.desc()).all()
     return jsonify([
         {
+            'id': r.id,
             'usuario': r.usuario,
             'nombreArchivo': r.nombre_archivo,
             'rojo': r.rojo,
             'verde': r.verde,
             'azul': r.azul,
             'fechaHora': r.fecha_hora.isoformat()
-        }
-        for r in registros
+        } for r in registros
     ])
 
-# Favicon
+@app.route('/imagenes/<int:id>/<tipo>.bmp')
+def imagen(id, tipo):
+    filename = f"{id}_{tipo}.bmp"
+    path = os.path.join(app.static_folder, 'uploads', filename)
+    if os.path.exists(path):
+        return send_from_directory(os.path.join(app.static_folder, 'uploads'), filename)
+    return "Imagen no encontrada", 404
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-# Ejecutar en local
 if __name__ == '__main__':
     app.run()
