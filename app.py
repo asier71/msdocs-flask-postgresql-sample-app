@@ -86,7 +86,7 @@ def subir_con_imagen():
         db.session.add(imagen)
         db.session.commit()
 
-        upload_dir = os.path.join(app.static_folder, 'uploads')
+        upload_dir = os.path.join(app.static_folder, 'images')
         os.makedirs(upload_dir, exist_ok=True)
 
         for key in ['original', 'byn', 'pixelada']:
@@ -104,7 +104,7 @@ def datos():
     registros = ImagenProcesada.query.order_by(ImagenProcesada.fecha_hora.desc()).all()
 
     def imagen_existe(id, tipo):
-        path = os.path.join(app.static_folder, 'uploads', f"{id}_{tipo}.bmp")
+        path = os.path.join(app.static_folder, 'images', f"{id}_{tipo}.bmp")
         return os.path.exists(path)
 
     return jsonify([
@@ -125,9 +125,9 @@ def datos():
 @app.route('/imagenes/<int:id>/<tipo>.bmp')
 def imagen(id, tipo):
     filename = f"{id}_{tipo}.bmp"
-    path = os.path.join(app.static_folder, 'uploads', filename)
+    path = os.path.join(app.static_folder, 'images', filename)
     if os.path.exists(path):
-        return send_from_directory(os.path.join(app.static_folder, 'uploads'), filename)
+        return send_from_directory(os.path.join(app.static_folder, 'images'), filename)
     return "Imagen no encontrada", 404
 
 @app.route('/favicon.ico')
