@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, url_for
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -9,7 +9,7 @@ from flask_wtf.csrf import CSRFProtect
 app = Flask(__name__, static_folder='static')
 csrf = CSRFProtect(app)
 
-# Cargar configuración según entorno
+# Configuración según entorno
 if 'WEBSITE_HOSTNAME' not in os.environ:
     print("Loading config.development and environment variables from .env file.")
     app.config.from_object('azureproject.development')
@@ -43,12 +43,12 @@ class ImagenProcesada(db.Model):
 
 # === RUTAS ===
 
-# Página principal (renderiza index.html)
+# Página principal
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
-# Recibir datos desde Scala (POST)
+# Ruta para recibir datos desde la app Scala
 @app.route('/registro', methods=['POST'])
 @csrf.exempt
 def registro():
@@ -71,7 +71,7 @@ def registro():
     except Exception as e:
         return jsonify({'error': f'Error procesando datos: {str(e)}'}), 500
 
-# Obtener todos los registros (GET)
+# Ruta para obtener datos y mostrarlos en la tabla HTML
 @app.route('/datos', methods=['GET'])
 def datos():
     registros = ImagenProcesada.query.order_by(ImagenProcesada.fecha_hora.desc()).all()
@@ -93,6 +93,6 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-# Ejecutar la app localmente
+# Ejecutar en local
 if __name__ == '__main__':
     app.run()
