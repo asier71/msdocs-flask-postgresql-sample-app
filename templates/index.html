@@ -70,9 +70,17 @@
                   <td>${r.azul}</td>
                   <td>${new Date(r.fechaHora).toLocaleString()}</td>
                   <td>
-                    ${r.hasOriginal ? `<a href="/imagenes/${r.id}/original.bmp" target="_blank" class="btn btn-outline-primary btn-sm btn-image">Original</a>` : ''}
-                    ${r.hasByn ? `<a href="/imagenes/${r.id}/byn.bmp" target="_blank" class="btn btn-outline-dark btn-sm btn-image">B/N</a>` : ''}
-                    ${r.hasPixelada ? `<a href="/imagenes/${r.id}/pixelada.bmp" target="_blank" class="btn btn-outline-secondary btn-sm btn-image">Pixelada</a>` : ''} 
+                    ${r.hasOriginal 
+                      ? `<a href="/imagenes/${r.id}/original.bmp" target="_blank" class="btn btn-outline-primary btn-sm btn-image">Original</a>` 
+                      : `<span class="text-muted small me-2"><i class="fas fa-times-circle text-danger"></i> Sin original</span>`}
+                      
+                    ${r.hasByn 
+                      ? `<a href="/imagenes/${r.id}/byn.bmp" target="_blank" class="btn btn-outline-dark btn-sm btn-image">B/N</a>` 
+                      : `<span class="text-muted small me-2"><i class="fas fa-times-circle text-danger"></i> Sin B/N</span>`}
+                      
+                    ${r.hasPixelada 
+                      ? `<a href="/imagenes/${r.id}/pixelada.bmp" target="_blank" class="btn btn-outline-secondary btn-sm btn-image">Pixelada</a>` 
+                      : `<span class="text-muted small"><i class="fas fa-times-circle text-danger"></i> Sin pixelada</span>`}
                   </td>
                 </tr>
               `).join('')}
