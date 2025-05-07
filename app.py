@@ -102,6 +102,11 @@ def subir_con_imagen():
 @app.route('/datos', methods=['GET'])
 def datos():
     registros = ImagenProcesada.query.order_by(ImagenProcesada.fecha_hora.desc()).all()
+
+    def imagen_existe(id, tipo):
+        path = os.path.join(app.static_folder, 'uploads', f"{id}_{tipo}.bmp")
+        return os.path.exists(path)
+
     return jsonify([
         {
             'id': r.id,
@@ -110,7 +115,10 @@ def datos():
             'rojo': r.rojo,
             'verde': r.verde,
             'azul': r.azul,
-            'fechaHora': r.fecha_hora.isoformat()
+            'fechaHora': r.fecha_hora.isoformat(),
+            'hasOriginal': imagen_existe(r.id, 'original'),
+            'hasByn': imagen_existe(r.id, 'byn'),
+            'hasPixelada': imagen_existe(r.id, 'pixelada')
         } for r in registros
     ])
 
